@@ -31,14 +31,17 @@ var promptCustomer = function(res){
 		message:'Enter the ID of the item you would like to purchase. [Quit with Q]'
 	}]).then(function(answer){
 			var correct = false;
-			for(var i=0;i<res.length;i++){
-				if(res[i].item_id===answer.choice){
-					correct=true;
+			if(answer.choice.toUpperCase()=="Q"){
+				process.exit();
+			}
+			for(var i=0; i<res.length; i++){
+				if(res[i].item_id == answer.choice){
+					correct = true;
 					var product=answer.choice;
 					var id=i;
 					inquirer.prompt({
 						type:'input',
-						name:'quantity',
+						name:'quant',
 						message:'How many would you like to buy?',
 						validate: function(value){
 							if(isNaN(value)===false){
@@ -48,14 +51,21 @@ var promptCustomer = function(res){
 							}
 						}
 					}).then(function(answer){
-						if((res[id].stock_quantity-answer.quantity)>0){
-							connection.query("UPDATE products SET stock_quantity= '"+(res[id].stock_quantity-answer.quantity)+"'WHERE product_name= '"+product+"'", function(err, res2){
+						if((res[id].stock_quantity-answer.quant)>0){
+							connection.query("UPDATE products SET stock_quantity='"+(res[id].stock_quantity-answer.quant)+"'WHERE item_id='"+product+"'", function(err, res2){
 								console.log('Product Bought');
 								makeTable();
 							})
+						} else {
+							console.log("Not a valid selection");
+							promptCustomer(res);
 						}
 					})
 				}
 			}
+			if(i==res.length && correct==false){
+				console.log("Not a valid selection");
+				promptCustomer(res);
+			};
 		})
-}
+};
